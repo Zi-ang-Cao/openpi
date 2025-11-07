@@ -105,8 +105,13 @@ def main(args: Args) -> None:
         policy = _policy.PolicyRecorder(policy, "policy_records")
 
     hostname = socket.gethostname()
-    local_ip = socket.gethostbyname(hostname)
-    logging.info("Creating server (host: %s, ip: %s)", hostname, local_ip)
+    # NOTE: TO handle the case where the hostname is not resolvable to an IP address, we catch the socket.gaierror and log a warning.
+    try:
+        local_ip = socket.gethostbyname(hostname)
+        logging.info("Creating server (host: %s, ip: %s)", hostname, local_ip)
+    except socket.gaierror:
+        logging.info("Creating server (host: %s)", hostname)
+        logging.warning("Could not resolve hostname to IP address")
 
     server = websocket_policy_server.WebsocketPolicyServer(
         policy=policy,
